@@ -383,3 +383,6 @@ class VideoDataset(torch.utils.data.Dataset):
 
     def __len__(self):
         return self.total_frames
+
+    def close(self):
+        lib.nvvl_destroy_video_loader(self.loader)
