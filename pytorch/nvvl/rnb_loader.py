@@ -1,8 +1,15 @@
 import collections
 import torch
 import time
+from .rnb_dataset import RnBDataset
+from .dataset import ProcessDesc
 
-class RnBSampler(object):
+class Sampler(object):
+    def sample(self, length):
+        raise NotImplementedError()
+
+
+class AllSampler(Sampler):
     def __init__(self):
         pass
 
@@ -11,11 +18,12 @@ class RnBSampler(object):
 
 
 class RnBLoader(object):
-    def __init__(self, dataset, sampler=None, batch_size=1, drop_last=True):
-        self.dataset = dataset
-        self.batch_size = batch_size
-        self.drop_last = drop_last
-        self.sampler = sampler if sampler is not None else RnBSampler()
+    def __init__(self, width, height, consecutive_frames, device_id=0, sampler=None):
+        processing = {
+            'input': ProcessDesc(scale_width=width, scale_height=height, random_flip=False)
+        }
+        self.dataset = RnBDataset(processing=processing, device_id=device_id, sequence_length=consecutive_frames)
+        self.sampler = sampler if sampler is not None else AllSampler()
 
         self.tensor_queue = collections.deque()
         self.batch_size_queue = collections.deque()
@@ -37,8 +45,7 @@ class RnBLoader(object):
         length = self.dataset.get_length(filename)
         frame_indices = self.sampler.sample(length)
         self.dataset._read_file(filename, frame_indices)
-        for _ in frame_indices:
-            self.batch_size_queue.append(1)
+        self.batch_size_queue.append(len(frame_indices))
 
 
     def __next__(self):
@@ -57,7 +64,15 @@ class RnBLoader(object):
         if any(label is not None for label in labels):
             t["labels"] = labels
 
-        return t
+        return t['input']
 
     def __iter__(self):
         return self
+
+
+    def flush(self):
+        self.dataset.close_all_files()
+
+
+    def close(self):
+        self.dataset.close()
