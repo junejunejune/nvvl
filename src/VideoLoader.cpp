@@ -88,6 +88,7 @@ class VideoLoader::impl {
     void reset_stats();
     void set_log_level(LogLevel level);
     void finish();
+    void close_all_files();
   private:
     struct OpenFile {
         bool open = false;
@@ -242,9 +243,12 @@ VideoLoader::impl::OpenFile& VideoLoader::impl::get_or_open_file(std::string fil
             }
             log_.info() << "Opened the first file, creating a video decoder" << std::endl;
 
+            CodecParameters* params = new CodecParameters();
+            avcodec_parameters_copy(params, codecpar(stream));
+
             vid_decoder_ = std::unique_ptr<detail::Decoder>{
                 new detail::NvDecoder(device_id_, log_,
-                                      codecpar(stream),
+                                      params,
                                       stream->time_base)};
         } else { // already opened a file
             if (!vid_decoder_) {
@@ -577,6 +581,16 @@ void VideoLoader::impl::set_log_level(LogLevel level) {
     log_.set_level(level);
 }
 
+
+void VideoLoader::close_all_files() {
+    pImpl->close_all_files();
+}
+
+void VideoLoader::impl::close_all_files() {
+    open_files_.clear();
+}
+
+
 } // end namespace NVVL
 
 // now the c interface
@@ -670,4 +684,9 @@ void nvvl_reset_stats(VideoLoaderHandle loader) {
 void nvvl_set_log_level(VideoLoaderHandle loader, LogLevel level) {
     auto vl = reinterpret_cast<NVVL::VideoLoader*>(loader);
     vl->set_log_level(level);
+}
+
+void nvvl_close_all_files(VideoLoaderHandle loader) {
+    auto vl = reinterpret_cast<NVVL::VideoLoader*>(loader);
+    vl->close_all_files();
 }

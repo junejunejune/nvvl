@@ -121,6 +121,9 @@ void nvvl_reset_stats(VideoLoaderHandle loader);
  */
 void nvvl_set_log_level(VideoLoaderHandle loader, enum LogLevel level);
 
+
+void nvvl_close_all_files(VideoLoaderHandle loader);
+
 #ifdef __cplusplus
 } // close extern "C" {
 
@@ -229,6 +232,9 @@ class VideoLoader {
      * \see LogLevel
      */
     void set_log_level(LogLevel level);
+
+
+    void close_all_files();
 
     // need these for pImpl pointer to be happy
     ~VideoLoader();
