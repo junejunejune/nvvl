@@ -37,18 +37,14 @@ class RnBLoader(object):
 
         self.tensor_queue.append((batch_size, t, labels))
 
-    def get_stats(self):
-        return self.dataset.get_stats()
-
-    def reset_stats(self):
-        return self.dataset.reset_stats()
-
-    def __len__(self):
-        return len(self.batch_sampler)
+    def loadfile(self, filename):
+        length = self.dataset.get_length(filename)
+        frame_indices = self.sampler.sample(length)
+        self.dataset._read_file(filename, frame_indices)
+        self.batch_size_queue.append(len(frame_indices))
 
     def __next__(self):
-        if not self.tensor_queue:
-            assert self.dataset.samples_left == 0, "Tensor queue is empty but there are samples left in the VideoDataset"
+        if not self.tensor_queue and self.dataset.samples_left == 0:
             raise StopIteration
 
         # first fire off a receive to keep the pipe filled
@@ -62,17 +58,14 @@ class RnBLoader(object):
         if any(label is not None for label in labels):
             t["labels"] = labels
 
-        return t
+        return t['input']
 
     def __iter__(self):
-        if self.dataset.samples_left != 0:
-            raise RuntimeError("Need to exhaust iterator before creating a new one")
-
-        for b in iter(self.batch_sampler):
-            for i in b:
-                self.dataset._read_sample(i)
-            self.batch_size_queue.append(len(b))
-
-        for i in range(self.buffer_length):
-            self._receive_batch()
         return self
+
+
+    def flush(self):
+        self.dataset.close_all_files()
+
+    def close(self):
+        self.dataset.close()

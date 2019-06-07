@@ -31,9 +31,6 @@ class RnBDataset(torch.utils.data.Dataset):
             print("Invalid log level", log_level, "using warn.", file=sys.stderr)
             log_level = _nvvl.LogLevel_Warn
 
-        if not filenames:
-            raise ValueError("Empty filenames list given to VideoDataset")
-
         if sequence_length < 1:
             raise ValueError("Sequence length must be at least 1")
 
@@ -91,7 +88,7 @@ class RnBDataset(torch.utils.data.Dataset):
     def _read_file(self, filename, frame_indices):
         for index in frame_indices:
             self.loader.read_sequence(str.encode(filename), index, self.sequence_length)
-            self.seq_info_queue.append((filename, frame))
+            self.seq_info_queue.append((filename, index))
             self.samples_left += 1
     
     def _read_sample(self, index):
