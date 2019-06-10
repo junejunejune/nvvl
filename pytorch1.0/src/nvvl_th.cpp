@@ -129,7 +129,8 @@ PYBIND11_MODULE(_nvvl, m) {
                .def("receive_frames_sync", &NVVL::VideoLoader::receive_frames_sync)
                .def("get_stats", &NVVL::VideoLoader::get_stats)
                .def("reset_stats", &NVVL::VideoLoader::reset_stats)
-               .def("set_log_level", &NVVL::VideoLoader::set_log_level);
+               .def("set_log_level", &NVVL::VideoLoader::set_log_level)
+               .def("close_all_files", &NVVL::VideoLoader::close_all_files);
 
     m.def("video_size_from_file", &nvvl_video_size_from_file);
 }
