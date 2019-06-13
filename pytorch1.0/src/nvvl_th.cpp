@@ -133,4 +133,5 @@ PYBIND11_MODULE(_nvvl, m) {
                .def("close_all_files", &NVVL::VideoLoader::close_all_files);
 
     m.def("video_size_from_file", &nvvl_video_size_from_file);
+    m.def("destroy_video_loader", &nvvl_destroy_video_loader);
 }

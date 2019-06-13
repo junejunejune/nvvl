@@ -6,6 +6,7 @@ import torch
 import torch.utils.data
 import time
 
+import nvvl
 from . import _nvvl
 from .dataset import ProcessDesc, log_levels
 
@@ -190,7 +191,7 @@ class RnBDataset(torch.utils.data.Dataset):
         return self.ts, self.tts
 
     def close(self):
-        return self.loader.destroy_video_loader() 
+        return _nvvl.destroy_video_loader(self.loader) 
 
     def close_all_files(self):
         return self.loader.close_all_files()
