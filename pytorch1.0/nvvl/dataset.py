@@ -67,7 +67,7 @@ class ProcessDesc(object):
 
 
     def __init__(self, type="float",
-                 width=0, height=0, scale_width=0, scale_height=0,
+                 width=0, height=0, scale_width=0, scale_height=0, scale_method="linear",
                  normalized=False, random_crop=False, random_flip=False,
                  color_space="RGB", index_map=None, dimension_order="fchw"):
         self._desc = _nvvl.LayerDesc()
@@ -95,6 +95,13 @@ class ProcessDesc(object):
             self.channels = 3
         else:
             raise ValueError("Unknown color space")
+
+        if scale_method.lower() == "nearest":
+            self.color_space = _nvvl.ScaleMethod_Nearest 
+        elif scale_method.lower() == "linear":
+            self.color_space = _nvvl.ScaleMethod_Linear
+        else: 
+            raise ValueError("Unknown scale method") 
 
         if type == "float":
             self.tensor_type = torch.cuda.FloatTensor

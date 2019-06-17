@@ -17,9 +17,9 @@ class AllSampler(Sampler):
 
 
 class RnBLoader(object):
-    def __init__(self, width, height, consecutive_frames, device_id=0, sampler=None):
+    def __init__(self, width, height, consecutive_frames, scale_method, device_id=0, sampler=None):
         processing = {
-            'input': ProcessDesc(scale_width=width, scale_height=height, random_flip=False)
+            'input': ProcessDesc(scale_width=width, scale_height=height, scale_method="linear", random_flip=False)
         }
         self.dataset = RnBDataset(processing=processing, device_id=device_id, sequence_length=consecutive_frames)
         self.sampler = sampler if sampler is not None else AllSampler()
