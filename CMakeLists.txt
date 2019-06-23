@@ -22,7 +22,7 @@ foreach(m avformat avcodec avfilter avutil)
 endforeach(m)
 
 set(CMAKE_REQUIRED_INCLUDES ${avformat_INCLUDE_DIRS})
-set(CMAKE_REQUIRED_LIBRARIES ${avformat_LIBRARIES})
+set(CMAKE_REQUIRED_LIBRARIES ${avformat_LINK_LIBRARIES})
 check_struct_has_member("struct AVStream" codecpar libavformat/avformat.h HAVE_AVSTREAM_CODECPAR LANGUAGE C)
 set(CMAKE_EXTRA_INCLUDE_FILES libavcodec/avcodec.h)
 check_type_size("AVBSFContext" AVBSFCONTEXT LANGUAGE CXX)

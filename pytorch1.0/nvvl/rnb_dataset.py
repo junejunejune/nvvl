@@ -191,7 +191,7 @@ class RnBDataset(torch.utils.data.Dataset):
         return self.ts, self.tts
 
     def close(self):
-        return _nvvl.destroy_video_loader(self.loader) 
+        return _nvvl.destroy_video_loader(self.loader)
 
     def close_all_files(self):
         return self.loader.close_all_files()

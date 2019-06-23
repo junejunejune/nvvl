@@ -243,9 +243,12 @@ VideoLoader::impl::OpenFile& VideoLoader::impl::get_or_open_file(std::string fil
             }
             log_.info() << "Opened the first file, creating a video decoder" << std::endl;
 
+            CodecParameters* params = new CodecParameters();
+            avcodec_parameters_copy(params, codecpar(stream));
+
             vid_decoder_ = std::unique_ptr<detail::Decoder>{
                 new detail::NvDecoder(device_id_, log_,
-                                      codecpar(stream))};
+                                      params)};
         } else { // already opened a file
             if (!vid_decoder_) {
                 throw std::logic_error("width is already set but we don't have a vid_decoder_");
