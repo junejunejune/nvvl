@@ -42,7 +42,7 @@ add_library(nvvl SHARED
 )
 
 add_library(NVVL::NVVL ALIAS nvvl)
-
+add_compile_definitions(_GLIBCXX_USE_CXX11_ABI=0)
 target_compile_features(nvvl PUBLIC cxx_std_14)
 
 target_compile_options(nvvl PRIVATE
