@@ -27,23 +27,46 @@ class RnBLoader(object):
 
         self.tensor_queue = collections.deque()
         self.batch_size_queue = collections.deque()
-
-
+        self.consecutive_frames = consecutive_frames
+        self.frames_indices_queue = collections.deque()
 
     def _receive_batch(self):
         batch_size = self.batch_size_queue.popleft()
+        frame_indices = self.frames_indices_queue.popleft()
+
         t = self.dataset._create_tensor_map(batch_size)
         labels = []
         for i in range(batch_size):
             _, label = self.dataset._start_receive(t, i)
             labels.append(label)
-
-        self.tensor_queue.append((batch_size, t, labels))
+        t_input = t['input']
+        #if overlapping frames existed in input video frame request, reformat tensors
+        if batch_size != len(frame_indices):
+            new_t = self.dataset._create_tensor_map(len(frame_indices))
+            for i in range(len(frame_indices)):
+                quotient = i // self.consecutive_frames
+                remainder = i % self.consecutive_frames
+                if remainder == 0:
+                    new_t['input'][i] = t_input[quotient]
+                else:
+                    new_t['input'][i,0:self.consecutive_frames-remainder] = t_input[quotient, remainder:self.consecutive_frames]
+                    new_t['input'][i,self.consecutive_frames-remainder:self.consecutive_frames]=t_input[quotient+1, 0:remainder]
+            self.tensor_queue.append((batch_size, new_t, labels))
+        else:
+            self.tensor_queue.append((batch_size, t, labels))
 
 
     def loadfile(self, filename):
         length = self.dataset.get_length(filename)
         frame_indices = self.sampler.sample(length)
+        self.frames_indices_queue.append(frame_indices)
+
+        #if overlapping frames exist, reformat frame_indices to not load overlapping frames
+        frames_set = []
+        if frame_indices[1] < frame_indices[0] + self.consecutive_frames:
+            frames_set = [i for i in range(frame_indices[0], frame_indices[len(frame_indices)-1]+self.consecutive_frames)]
+            import math
+            frame_indices = [i*self.consecutive_frames+1 for i in range(0, math.ceil(len(frames_set)/self.consecutive_frames))]
         self.dataset._read_file(filename, frame_indices)
         self.batch_size_queue.append(len(frame_indices))
 
@@ -63,7 +86,7 @@ class RnBLoader(object):
 
         if any(label is not None for label in labels):
             t["labels"] = labels
-
+        
         return t['input']
 
     def __iter__(self):
