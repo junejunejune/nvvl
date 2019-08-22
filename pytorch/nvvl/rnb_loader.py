@@ -30,6 +30,8 @@ class RnBLoader(object):
         self.consecutive_frames = consecutive_frames
         self.frames_indices_queue = collections.deque()
 
+
+
     def _receive_batch(self):
         batch_size = self.batch_size_queue.popleft()
         frame_indices = self.frames_indices_queue.popleft()
@@ -39,6 +41,7 @@ class RnBLoader(object):
         for i in range(batch_size):
             _, label = self.dataset._start_receive(t, i)
             labels.append(label)
+        
         t_input = t['input']
         #if overlapping frames existed in input video frame request, reformat tensors
         if batch_size != len(frame_indices):
