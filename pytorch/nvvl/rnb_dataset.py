@@ -12,12 +12,11 @@ from .dataset import ProcessDesc, log_levels
 
 
 class RnBDataset(torch.utils.data.Dataset):
-    def __init__(self, sequence_length=1, device_id=0,clip_length=1,
+    def __init__(self, sequence_length=1, device_id=0,
                  get_label=None, processing=None, log_level="warn"):
         self.ffi = lib._ffi
         self.sequence_length = sequence_length
         self.device_id = device_id
-        self.clip_length = clip_length
         self.get_label = get_label if get_label is not None else lambda x,y,z: None
         self.ts = []
         self.tts = []
